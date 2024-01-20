@@ -2,25 +2,20 @@ version: '3'
 
 services:
   nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    image: myapp/nginx
-    container_name: webserver
+    image: nginx:1.19.8-alpine
+    depends_on:
+      - wp
+    container_name: nginx
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
-    restart: unless-stopped
     volumes:
       - www-html:/var/www/html
       - ./nginx-conf.d:/etc/nginx/conf.d
-      - ./public:/data/mysite.local
-      - ./certbot/www:/var/www/certbot/:ro
-      - phpsocket:/var/run
+      - etc-letsencrypt:/etc/letsencrypt
     networks:
       - app-network
-    depends_on:
-      - app
 
   certbot:
     image: certbot/certbot
