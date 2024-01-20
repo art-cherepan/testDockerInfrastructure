@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  nginx:
+  nginx: nginx:1.19.8-alpine
     build:
       context: ./nginx
       dockerfile: Dockerfile
@@ -10,8 +10,10 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    restart: always
+    restart: unless-stopped
     volumes:
+      - www-html:/var/www/html
+      - ./nginx-conf.d:/etc/nginx/conf.d
       - ./public:/data/mysite.local
       - ./certbot/www:/var/www/certbot/:ro
       - phpsocket:/var/run
@@ -21,10 +23,15 @@ services:
       - app
 
   certbot:
-    image: certbot/certbot:latest
+    image: certbot/certbot
+    depends_on:
+      - nginx
+    container_name: certbot
     volumes:
-      - ./certbot/www/:/var/www/certbot/:rw
-      - ./certbot/conf/:/etc/letsencrypt/:rw
+      - etc-letsencrypt:/etc/letsencrypt
+      - www-html:/var/www/html
+    command: certonly --webroot --webroot-path=/var/www/html --email art.cherepan@gmail.com --agree-tos --no-eff-email -d 327935.simplecloud.ru
+ 
 
   app:
     build:
