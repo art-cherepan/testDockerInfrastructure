@@ -8,7 +8,61 @@ services:
     image: myapp/nginx
     container_name: webserver
     ports:
+      - "80:80"aversion: '3'
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: myapp/nginx
+    container_name: webserver
+    ports:
       - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      - www-html:/var/www/html
+      - ./nginx-conf.d:/etc/nginx/conf.d
+      - ./public:/data/mysite.local
+      - ./certbot/www:/var/www/certbot/:ro
+      - phpsocket:/var/run
+    networks:
+      - app-network
+    depends_on:
+      - app
+
+  certbot:
+    image: certbot/certbot
+    depends_on:
+      - nginx
+    container_name: certbot
+    volumes:
+      - etc-letsencrypt:/etc/letsencrypt
+      - www-html:/var/www/html
+    command: certonly --webroot --webroot-path=/var/www/html --email art.cherepan@gmail.com --agree-tos --no-eff-email -d 327935.simplecloud.ru
+ 
+
+  app:
+    build:
+      context: ./fpm
+      dockerfile: Dockerfile
+    image: myapp/php
+    container_name: app
+    volumes:
+      - ./public:/data/mysite.local
+      - phpsocket:/var/run
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  phpsocket:
+  etc-letsencrypt:
+  www-html:
       - "443:443"
     restart: unless-stopped
     volumes:
