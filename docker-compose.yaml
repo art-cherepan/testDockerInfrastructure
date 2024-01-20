@@ -2,25 +2,25 @@ version: '3'
 
 services:
   nginx: nginx:1.19.8-alpine
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    image: myapp/nginx
-    container_name: webserver
-    ports:
-      - "80:80"
-      - "443:443"
-    restart: unless-stopped
-    volumes:
-      - www-html:/var/www/html
-      - ./nginx-conf.d:/etc/nginx/conf.d
-      - ./public:/data/mysite.local
-      - ./certbot/www:/var/www/certbot/:ro
-      - phpsocket:/var/run
-    networks:
-      - app-network
-    depends_on:
-      - app
+  build:
+    context: ./nginx
+    dockerfile: Dockerfile
+  image: myapp/nginx
+  container_name: webserver
+  ports:
+    - "80:80"
+    - "443:443"
+  restart: unless-stopped
+  volumes:
+    - www-html:/var/www/html
+    - ./nginx-conf.d:/etc/nginx/conf.d
+    - ./public:/data/mysite.local
+    - ./certbot/www:/var/www/certbot/:ro
+    - phpsocket:/var/run
+  networks:
+    - app-network
+  depends_on:
+    - app
 
   certbot:
     image: certbot/certbot
